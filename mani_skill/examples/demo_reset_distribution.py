@@ -30,7 +30,7 @@ def main(args):
     env: BaseEnv = gym.make(
         args.env_id,
         num_envs=1,
-        obs_mode="state",
+        obs_mode="none",
         reward_mode="none",
         render_mode=args.render_mode,
         sensor_configs=dict(shader_pack=args.shader),
