@@ -20,11 +20,7 @@ from mani_skill.utils.structs.pose import Pose
 from mani_skill.utils.structs.types import SimConfig
 
 
-@register_env(
-    "TurnFaucet-v1",
-    max_episode_steps=200,
-    asset_download_ids=["partnet_mobility_faucet"],
-)
+@register_env("TurnFaucet-v1", max_episode_steps=200)
 class TurnFaucetEnv(BaseEnv):
     SUPPORTED_REWARD_MODES = ["sparse", "none"]
     SUPPORTED_ROBOTS = ["panda", "panda_wristcam", "fetch"]

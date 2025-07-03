@@ -340,18 +340,6 @@ class BaseAgent:
             obs.update(controller=controller_state)
         return obs
 
-    def get_controller_state(self):
-        """
-        Get the state of the controller.
-        """
-        return self.controller.get_state()
-
-    def set_controller_state(self, state: Array):
-        """
-        Set the state of the controller.
-        """
-        self.controller.set_state(state)
-
     def get_state(self) -> Dict:
         """Get current state, including robot state and controller state"""
         state = dict()
@@ -365,7 +353,7 @@ class BaseAgent:
         state["robot_qvel"] = self.robot.get_qvel()
 
         # controller state
-        state["controller"] = self.get_controller_state()
+        state["controller"] = self.controller.get_state()
 
         return state
 
@@ -380,7 +368,7 @@ class BaseAgent:
         self.robot.set_qvel(state["robot_qvel"])
 
         if not ignore_controller and "controller" in state:
-            self.set_controller_state(state["controller"])
+            self.controller.set_state(state["controller"])
         if self.device.type == "cuda":
             self.scene._gpu_apply_all()
             self.scene.px.gpu_update_articulation_kinematics()

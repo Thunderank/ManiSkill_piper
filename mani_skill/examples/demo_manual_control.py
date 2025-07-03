@@ -16,15 +16,15 @@ def parse_args():
     parser.add_argument("-e", "--env-id", type=str, required=True)
     parser.add_argument("-o", "--obs-mode", type=str)
     parser.add_argument("--reward-mode", type=str)
-    parser.add_argument("-c", "--control-mode", type=str, default="pd_ee_delta_pose")
+    parser.add_argument("-c", "--control-mode", type=str, default="pd_ee_delta_pose") # 控制模式
     parser.add_argument("--render-mode", type=str, default="sensors")
-    parser.add_argument("--enable-sapien-viewer", action="store_true")
+    parser.add_argument("--enable-sapien-viewer", action="store_true") # 启用SAPIEN原生查看器
     parser.add_argument("--record-dir", type=str)
     args, opts = parser.parse_known_args()
 
     # Parse env kwargs
     print("opts:", opts)
-    eval_str = lambda x: eval(x[1:]) if x.startswith("@") else x
+    eval_str = lambda x: eval(x[1:]) if x.startswith("@") else x    #lamda表达式，设置函数eval_str(str),去除首字符@
     env_kwargs = dict((x, eval_str(y)) for x, y in zip(opts[0::2], opts[1::2]))
     print("env_kwargs:", env_kwargs)
     args.env_kwargs = env_kwargs
@@ -33,9 +33,10 @@ def parse_args():
 
 
 def main():
-    np.set_printoptions(suppress=True, precision=3)
+    np.set_printoptions(suppress=True, precision=3) # 设置NumPy输出格式
     args = parse_args()
 
+    # 创建强化学习环境
     env: BaseEnv = gym.make(
         args.env_id,
         obs_mode=args.obs_mode,
@@ -58,7 +59,7 @@ def main():
     obs, _ = env.reset()
     after_reset = True
 
-    # Viewer
+    # Viewer 初始化渲染器和交互配置
     if args.enable_sapien_viewer:
         env.render_human()
     renderer = visualization.ImageRenderer()
@@ -75,6 +76,7 @@ def main():
     plt.rcParams["keymap.yscale"].remove("l")
     plt.rcParams["keymap.xscale"].remove("k")
 
+
     def render_wait():
         if not args.enable_sapien_viewer:
             return
@@ -84,12 +86,12 @@ def main():
             if sapien_viewer.window.key_down("0"):
                 break
 
-    # Embodiment
+    # Embodiment 获取机器人配置信息
     has_base = "base" in env.agent.controller.configs
     num_arms = sum("arm" in x for x in env.agent.controller.configs)
     has_gripper = any("gripper" in x for x in env.agent.controller.configs)
     gripper_action = 1
-    EE_ACTION = 0.1
+    EE_ACTION = 0.1 # 末端执行器动作步长
 
     while True:
         # -------------------------------------------------------------------------- #
@@ -98,7 +100,7 @@ def main():
         if args.enable_sapien_viewer:
             env.render_human()
 
-        render_frame = env.render().cpu().numpy()[0]
+        render_frame = env.render().cpu().numpy()[0]    #该行报错AttributeError: 'Viewer' object has no attribute 'cpu'
 
         if after_reset:
             after_reset = False
@@ -117,7 +119,7 @@ def main():
         body_action = np.zeros([3])
         base_action = np.zeros([2])  # hardcoded for fetch robot
 
-        # Parse end-effector action
+        # Parse end-effector action 根据控制模式初始化末端执行器动作
         if (
             "pd_ee_delta_pose" in args.control_mode
             or "pd_ee_target_delta_pose" in args.control_mode
@@ -132,15 +134,18 @@ def main():
             raise NotImplementedError(args.control_mode)
 
         # Base. Hardcoded for Fetch robot at the moment. In the future write interface to do this
+         # 解析键盘输入对应的机器人动作（基础移动）
         if has_base:
+            #控制底座前进后退旋转
             if key == "w":  # forward
                 base_action[0] = 1
             elif key == "s":  # backward
                 base_action[0] = -1
-            elif key == "a":  # rotate counter
-                base_action[1] = 1
-            elif key == "d":  # rotate clockwise
-                base_action[1] = -1
+            elif key == "q":  # rotate counter
+                base_action[2] = 1
+            elif key == "e":  # rotate clockwise
+                base_action[2] = -1
+            #控制机身
             elif key == "z":  # lift
                 body_action[2] = 1
             elif key == "x":  # lower
@@ -192,9 +197,9 @@ def main():
                 gripper_action = -1
 
         # Other functions
-        if key == "0":  # switch to SAPIEN viewer
+        if key == "0":  # switch to SAPIEN viewer 切换到SAPIEN原生查看器
             render_wait()
-        elif key == "r":  # reset env
+        elif key == "r":  # reset env 重置环境
             obs, _ = env.reset()
             gripper_action = 1
             after_reset = True
@@ -202,7 +207,7 @@ def main():
         elif key == None:  # exit
             break
 
-        # Visualize observation
+        # Visualize observation 如果设置了点云查看，则按v进行切换
         if key == "v":
             if "pointcloud" in env.obs_mode:
                 import trimesh
@@ -216,15 +221,15 @@ def main():
                 trimesh.PointCloud(xyzw[mask, :3], rgb[mask]).show()
 
         # -------------------------------------------------------------------------- #
-        # Post-process action
+        # Post-process action 构造动作字典并执行环境步骤
         # -------------------------------------------------------------------------- #
         action_dict = dict(
             base=base_action, arm=ee_action, body=body_action, gripper=gripper_action
         )
         action_dict = common.to_tensor(action_dict)
-        action = env.agent.controller.from_action_dict(action_dict)
+        action = env.agent.controller.from_action_dict(action_dict) 
 
-        obs, reward, terminated, truncated, info = env.step(action)
+        obs, reward, terminated, truncated, info = env.step(action) #执行动作并观察环境反馈
         print("reward", reward)
         print("terminated", terminated, "truncated", truncated)
         print("info", info)
