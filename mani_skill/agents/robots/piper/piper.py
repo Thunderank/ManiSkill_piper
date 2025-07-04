@@ -44,7 +44,7 @@ class Piper(BaseAgent):
     keyframes = dict(
         rest=Keyframe(
             pose=sapien.Pose(),
-            #设置初始关节位置 基座[0] + 左臂(joint 1-6)[1-6] + 夹爪joint[7-8]
+            #设置初始关节位置 基座[0] + 右臂(joint 1-6)[1-6] + 夹爪joint[7-8]
             qpos=np.array([0, 0, 0, 0, 0, 0, 0, 0, 0,]),   #9维
         )
     )
@@ -70,17 +70,17 @@ class Piper(BaseAgent):
             "base_to_dummy"
         ]
         
-        # 左臂关节
-        self.left_arm_joint_names = [
+        # 右臂关节
+        self.right_arm_joint_names = [
             "joint1", "joint2", "joint3", "joint4", "joint5", "joint6"
         ]
         
         
         # 夹爪关节
-        self.gripper_left_joint_names = ["joint7", "joint8"]
+        self.gripper_right_joint_names = ["joint7", "joint8"]
         
-        self.ee_left_link_name = "link7"  # 左臂夹爪1
-        self.ee_right_link_name = "link8"  # 左臂夹爪2
+        self.ee_right_link_name = "link7"  # 右臂夹爪1
+        self.ee_right_link_name = "link8"  # 右臂夹爪2
         # 添加 TCP 链接名称 (工具中心点)
         self.tcp_link_name = "link6"  # 夹爪基座作为 TCP
 
@@ -95,8 +95,8 @@ class Piper(BaseAgent):
         self.gripper_force_limit = 100
 
         # 末端执行器链接名称
-        self.ee_left_link_name = "link7"  # 左臂夹爪1
-        self.ee_right_link_name = "link8"  # 左臂夹爪2
+        self.ee_right_link_name = "link7"  # 右臂夹爪1
+        self.ee_right_link_name = "link8"  # 右臂夹爪2
 
         super().__init__(*args, **kwargs)
 
@@ -105,9 +105,9 @@ class Piper(BaseAgent):
         # --------------------------------------------------------------------------
         # 双臂控制器config
         # --------------------------------------------------------------------------
-        # 左臂位置控制器
-        left_arm_pd_joint_pos = PDJointPosControllerConfig(
-            self.left_arm_joint_names,
+        # 右臂位置控制器
+        right_arm_pd_joint_pos = PDJointPosControllerConfig(
+            self.right_arm_joint_names,
             None,
             None,
             self.arm_stiffness,
@@ -119,9 +119,9 @@ class Piper(BaseAgent):
         # --------------------------------------------------------------------------
         # 夹爪控制器
         # --------------------------------------------------------------------------
-        # 左夹爪位置控制器
-        gripper_left_pd_joint_pos = PDJointPosMimicControllerConfig(
-            self.gripper_left_joint_names,
+        # 右夹爪位置控制器
+        gripper_right_pd_joint_pos = PDJointPosMimicControllerConfig(
+            self.gripper_right_joint_names,
             -0.01,  # 最小值
             0.05,    # 最大值
             self.gripper_stiffness,
@@ -134,7 +134,7 @@ class Piper(BaseAgent):
         controller_configs = dict(
             pd_joint_delta_pos=dict(
                 arm=PDJointPosControllerConfig(
-                    self.left_arm_joint_names + self.gripper_left_joint_names,
+                    self.right_arm_joint_names + self.gripper_right_joint_names,
                     None,
                     None,
                     self.arm_stiffness,
@@ -143,15 +143,24 @@ class Piper(BaseAgent):
                     normalize_action=False,
                 )
             ),
+
+            # pd_joint_delta_pos_dual_arm=dict(         #从XLeRobot迁移过来的双臂控制方式config
+            #     base=base_pd_joint_vel,
+            #     arm1=arm_pd_joint_delta_pos,
+            #     arm2=arm2_pd_joint_delta_pos,
+            #     gripper1=gripper_pd_joint_pos,
+            #     gripper2=gripper2_pd_joint_pos,
+            #     body=body_pd_joint_delta_pos,
+            # ),
         )
 
         # 返回深拷贝的控制器配置，便于修改配置后复原
         return deepcopy(controller_configs)
 
     def _after_init(self):
-        # 左臂末端执行器
-        self.left_ee_link: Link = sapien_utils.get_obj_by_name(
-            self.robot.get_links(), self.ee_left_link_name
+        # 右臂末端执行器
+        self.right_ee_link: Link = sapien_utils.get_obj_by_name(
+            self.robot.get_links(), self.ee_right_link_name
         )
         # TCP 链接
         self.tcp: Link = sapien_utils.get_obj_by_name(
@@ -160,10 +169,10 @@ class Piper(BaseAgent):
 
 
 
-    def is_grasping(self, object: Actor, min_force=0.5, max_angle=85, arm="left"):
-        """检查机器人是否抓取物体（左臂或右臂）"""
-        if arm == "left":
-            ee_link = self.left_ee_link
+    def is_grasping(self, object: Actor, min_force=0.5, max_angle=85, arm="right"):
+        """检查机器人是否抓取物体（右臂）"""
+        if arm == "right":
+            ee_link = self.right_ee_link
  
         contact_forces = self.scene.get_pairwise_contact_forces(ee_link, object)
         force = torch.linalg.norm(contact_forces, axis=1)
@@ -172,14 +181,14 @@ class Piper(BaseAgent):
 
 
     @property
-    def left_tcp_pos(self) -> Pose:
-        """左臂末端位置"""
-        return self.left_ee_link.pose.p
+    def right_tcp_pos(self) -> Pose:
+        """右臂末端位置"""
+        return self.right_ee_link.pose.p
 
     @property
-    def left_tcp_pose(self) -> Pose:
-        """左臂末端位姿"""
-        return self.left_ee_link.pose
+    def right_tcp_pose(self) -> Pose:
+        """右臂末端位姿"""
+        return self.right_ee_link.pose
 
 
     def tcp_pos(self):
