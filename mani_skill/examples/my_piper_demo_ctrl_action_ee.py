@@ -184,6 +184,7 @@ def main(args: Args):
         if env.unwrapped.agent is not None:
             print("Control mode", env.unwrapped.control_mode)
         print("Reward mode", env.unwrapped.reward_mode)
+        
 
     # 重置环境并设置随机种子
     obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=True))
@@ -195,6 +196,8 @@ def main(args: Args):
         if isinstance(viewer, sapien.utils.Viewer):
             viewer.paused = args.pause
         env.render()
+
+    print("目标方块位姿",env.obj.scene.actors['cube'].pose)
 
     """                    键盘交互控制代码               """
 

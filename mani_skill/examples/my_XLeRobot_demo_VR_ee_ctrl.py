@@ -1,3 +1,7 @@
+"""
+    添加旋转功能,夹爪抓取功能
+"""
+
 import gymnasium as gym
 import numpy as np
 import sapien
@@ -12,7 +16,7 @@ from mani_skill.utils.wrappers import RecordEpisode
 # Add import for OculusReader
 import sys
 import os
-sys.path.append(os.path.abspath("/home/vec/lerobot/oculus_reader"))
+sys.path.append(os.path.abspath("/home/robot/Desktop/3DGS")) #修改为oculus工作目录的父目录
 from oculus_reader.reader import OculusReader
 
 import tyro
@@ -170,10 +174,30 @@ def inverse_kinematics(x, y, l1=0.1159, l2=0.1350):
     
     return joint2, joint3
 
+def rotation_matrix_to_euler_angles(R):
+    """
+    将旋转矩阵转换为欧拉角 (roll, pitch, yaw)
+    """
+    sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
+    
+    singular = sy < 1e-6
+
+    if not singular:
+        x = math.atan2(R[2,1], R[2,2])
+        y = math.atan2(-R[2,0], sy)
+        z = math.atan2(R[1,0], R[0,0])
+    else:
+        x = math.atan2(-R[1,2], R[1,1])
+        y = math.atan2(-R[2,0], sy)
+        z = 0
+
+    return np.array([x, y, z])
+
+
 def main(args: Args):
     pygame.init()
     
-    screen_width, screen_height = 600, 750
+    screen_width, screen_height = 800, 900  #设置控制窗口尺寸
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("Control Window - VR Controller Input")
     font = pygame.font.SysFont(None, 24)
@@ -188,9 +212,12 @@ def main(args: Args):
     initial_z = -0.15
     
     # Define scale factor for VR to robot mapping
-    vr_scale_y = 2.5 
+    # vr_scale_y = 2.5
+    # vr_scale_x = 0.8
+    vr_scale_y = 1        #修改缩放参数,以扩大VR操作范围
     vr_scale_x = 0.8
-
+    # 添加旋转缩放因子
+    rotation_scale = 0.8
 
 
     np.set_printoptions(suppress=True, precision=3)
@@ -315,11 +342,15 @@ def main(args: Args):
     step_counter = 0
     warmup_steps = 50
     
-    # Variables to track previous pinch states for gripper control
-    prev_pinch_left = False
-    prev_pinch_right = False
-    
     while True:
+        # 初始化变量
+        left_euler = None
+        right_euler = None
+
+        # 添加夹爪控制变量
+        gripper_force_arm1 = 0.0  # 0.0 = 未按下, 1.0 = 完全按下按钮
+        gripper_force_arm2 = 0.0
+
         for event in pygame.event.get():    #在控制中,此处监听按下键盘的事件,处理 退出 和 重置 两个功能
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -339,7 +370,9 @@ def main(args: Args):
                     
                     # Reset target joints
                     target_joints = np.zeros_like(target_joints)
-                    
+                    target_joints[12] = 2.5 #设置夹爪初始打开
+                    target_joints[13] = 2.5 
+
                     # Calculate initial joint positions based on inverse kinematics
                     try:
                         compensated_y1 = ee_pos_arm1[1] - tip_length * math.sin(pitch_1)
@@ -359,17 +392,23 @@ def main(args: Args):
         # Get VR controller transforms and buttons
         transforms, buttons = oculus_reader.get_transformations_and_buttons()   #oculus读取变换和按下的按钮
 
-        print(f"oculus读取结果 transforms:{transforms}")
-        print(f"buttons:{buttons}")
+        # print(f"oculus读取结果 transforms:{transforms}")
+        # print(f"buttons:{buttons}")
         
         # Print controller positions in real-time
         if 'l' in transforms:
             left_pos = transforms['l'][:3, 3]
             print(f"Left controller: X={left_pos[0]:.3f}, Y={left_pos[1]:.3f}, Z={left_pos[2]:.3f}")
+            # 添加旋转角
+            left_rot = rotation_matrix_to_euler_angles(transforms['l'][:3, :3])
+            print(f"Left controller: Rot=({left_rot[0]:.3f}, {left_rot[1]:.3f}, {left_rot[2]:.3f})")
         
         if 'r' in transforms:
             right_pos = transforms['r'][:3, 3]
             print(f"Right controller: X={right_pos[0]:.3f}, Y={right_pos[1]:.3f}, Z={right_pos[2]:.3f}")
+            # 添加旋转角
+            right_rot = rotation_matrix_to_euler_angles(transforms['r'][:3, :3])
+            print(f"Right controller: Rot=({right_rot[0]:.3f}, {right_rot[1]:.3f}, {right_rot[2]:.3f})")
         
         # Update target joint positions based on VR controller positions - only after warmup
         if step_counter >= warmup_steps:
@@ -379,25 +418,37 @@ def main(args: Args):
             
             if 'l' in transforms:
                 left_controller_pos = transforms['l'][:3, 3]
+                # 添加获取左手控制器旋转角
+                left_controller_rot = transforms['l'][:3, :3]
+                left_euler = rotation_matrix_to_euler_angles(left_controller_rot)
+
                 # Calculate adjusted positions
                 x_new_left = left_controller_pos[0] - left_initial_x    #用 变换 - 初始位置 -> 新的目标位置
                 y_new_left = left_controller_pos[1] - initial_y
                 z_new_left = -left_controller_pos[2] + initial_z
                 
                 # Calculate r for horizontal distance in vertical plane
-                r_left = math.sqrt(x_new_left**2 + z_new_left**2) * vr_scale_x  #XLeRobot的x轴其实是垂直屏幕极坐标轴的距离轴,y是相对于基座的横向坐标
+                r_left = math.sqrt(x_new_left**2 + z_new_left**2) * vr_scale_x
                 
                 # Update end effector position for RIGHT arm (arm2) - SWAPPED
                 ee_pos_arm2[0] = r_left
                 ee_pos_arm2[1] = y_new_left * vr_scale_y
+
+                # 添加使用控制器旋转控制末端执行器姿态
+                # pitch角控制夹爪俯仰
+                pitch_2 = -left_euler[1] * rotation_scale    #取负号反转pitch角方向
                 
                 # Calculate rotation angle for joint[7] based on controller orientation - SWAPPED
                 if abs(x_new_left) > 0.05 or abs(z_new_left) > 0.05:  # Small deadzone
                     rotation_angle_left = math.atan2(x_new_left, z_new_left)
-                    target_joints[7] = rotation_angle_left * 1.2  # Scale factor to adjust sensitivity  对于旋转角度的缩放
+                    target_joints[7] = rotation_angle_left * 1.2  # Scale factor to adjust sensitivity
             
             if 'r' in transforms:
                 right_controller_pos = transforms['r'][:3, 3]
+                # 获取右手控制器旋转
+                right_controller_rot = transforms['r'][:3, :3]
+                right_euler = rotation_matrix_to_euler_angles(right_controller_rot)
+            
                 # Calculate adjusted positions
                 x_new_right = right_controller_pos[0] - right_initial_x
                 y_new_right = right_controller_pos[1] - initial_y
@@ -409,39 +460,41 @@ def main(args: Args):
                 # Update end effector position for LEFT arm (arm1) - SWAPPED
                 ee_pos_arm1[0] = r_right
                 ee_pos_arm1[1] = y_new_right * vr_scale_y
+
+                # 使用控制器旋转控制末端执行器姿态
+                # pitch角控制夹爪俯仰
+                pitch_1 = -right_euler[1] * rotation_scale      #取负号反转pitch角方向      
                 
                 # Calculate rotation angle for joint[2] based on controller orientation - SWAPPED
                 if abs(x_new_right) > 0.05 or abs(z_new_right) > 0.05:  # Small deadzone
                     rotation_angle_right = math.atan2(x_new_right, z_new_right)
                     target_joints[2] = rotation_angle_right * 1.2  # Scale factor to adjust sensitivity
             
-            # Handle pinch detection for gripper control
-            if buttons:
-                # Left hand pinch for RIGHT gripper - SWAPPED
-                if 'l' in buttons and 'pinch' in buttons['l']:
-                    current_pinch_left = buttons['l']['pinch']
-                    if current_pinch_left and not prev_pinch_left:
-                        # Toggle right gripper (index 13) - SWAPPED
-                        if target_joints[13] < 0.4:  # If closed or partially closed
-                            target_joints[13] = 2.5  # Open
-                        else:
-                            target_joints[13] = 0.1  # Close
-                    prev_pinch_left = current_pinch_left
+
+            if transforms and buttons:
+                # 使用Trig或Grip键控制夹爪压力,同时按下则闭合,任意一个键松开则打开
+                #rightTrig RTr  右手柄前键  rightGrip RG 右手柄侧键
+                gripper_force_arm1 = min(buttons['rightTrig'][0], buttons['rightGrip'][0])   #根据按键最轻的力度设置夹爪力度.
+                target_joints[12] = 2.5 * (1 - gripper_force_arm1) #夹爪目标位置 (0 = 闭合, 2.5 = 打开)
+
+                #leftTrig LTr  左手柄前键  leftGrip LG 左手柄侧键
+                gripper_force_arm2 = min(buttons['leftTrig'][0], buttons['leftGrip'][0])   #根据按键最轻的力度设置夹爪力度.
+                target_joints[13] = 2.5 * (1 - gripper_force_arm2) #夹爪目标位置 (0 = 闭合, 2.5 = 打开)
+
+                # 额外的夹爪控制：A/B按钮用于右夹爪精细控制 X/Y按钮用于左夹爪精细控制
+                if 'A' in buttons and buttons['A']:# 按下A按钮时右夹爪精轻微闭合
+                    target_joints[13] -= 0.1
+                if 'B' in buttons and buttons['B']:# 按下B按钮时右夹爪精轻微打开
+                    target_joints[13] += 0.1
                 
-                # Right hand pinch for LEFT gripper - SWAPPED
-                if 'r' in buttons and 'pinch' in buttons['r']:
-                    current_pinch_right = buttons['r']['pinch']
-                    if current_pinch_right and not prev_pinch_right:
-                        # Toggle left gripper (index 12) - SWAPPED
-                        if target_joints[12] < 0.4:  # If closed or partially closed
-                            target_joints[12] = 2.5  # Open
-                        else:
-                            target_joints[12] = 0.1  # Close
-                    prev_pinch_right = current_pinch_right
+                if 'X' in buttons and buttons['X']:# 按下X按钮时左夹爪轻微闭合
+                    target_joints[12] -= 0.1
+                if 'Y' in buttons and buttons['Y']:# 按下Y按钮时左夹爪轻微打开
+                    target_joints[12] += 0.1
                 
-                # Note: We'll use keyboard for base control instead of thumbstick
+                
             
-            # Keyboard base control - similar to original demo
+            # Keyboard base control - similar to original demo  对于基座移动,仍保留键盘控制方式
             keys = pygame.key.get_pressed()
             
             # Base forward/backward - direct control with keyboard
@@ -499,20 +552,16 @@ def main(args: Args):
             screen.blit(warmup_text, (300, 10))
         
         control_texts = [
-            "W/S: joint[0] (+/-)",
-            "A/D: joint[1] (+/-)",
-            "Y/7: joint[2] (+/-)",
-            "8/U: EE1 Y (+/-)",
-            "9/I: EE1 X (+/-)",
-            "0/P: joint[5] (+/-)",
-            "-/[: joint[6] (+/-)",
-            "H/N: joint[7] (+/-)",
-            "J/M: EE2 Y (+/-)",
-            "K/,: EE2 X (+/-)",
-            "L/.: joint[10] (+/-)",
-            ";/?: joint[11] (+/-)",
-            "F/G: Toggle grippers",
-            "R: Reset all positions"
+            "Keyboard Control:",
+            "W/S: forward/backward",
+            "A/D: turn left/right",
+            "",
+            "",
+            "Oculus Handle Control:",
+            "rightTrig+rightGrip: right claw grisp/release",
+            "A/B: right claw close/open",
+            "lefttTrig+leftGrip: left claw grisp/release",
+            "X/Y: left claw close/open",
         ]
         
         col_height = len(control_texts) // 2 + len(control_texts) % 2
@@ -564,7 +613,7 @@ def main(args: Args):
         y_pos += 25
         arm1_joints = current_joints[2:7]
         arm1_text = font.render(
-            f"Arm 1 [2,3,4,5,6]: {np.round(arm1_joints, 2)}", 
+            f"Right Arm [2,3,4,5,6]: {np.round(arm1_joints, 2)}", 
             True, (255, 255, 0)
         )
         screen.blit(arm1_text, (10, y_pos))
@@ -573,7 +622,7 @@ def main(args: Args):
         y_pos += 25
         arm2_joints = current_joints[7:12]
         arm2_text = font.render(
-            f"Arm 2 [7,8,9,10,11]: {np.round(arm2_joints, 2)}", 
+            f"Left Arm [7,8,9,10,11]: {np.round(arm2_joints, 2)}", 
             True, (255, 255, 0)
         )
         screen.blit(arm2_text, (10, y_pos))
@@ -593,7 +642,7 @@ def main(args: Args):
         y_pos += 25
         arm1_targets = target_joints[2:7]
         arm1_target_text = font.render(
-            f"Arm 1 Target [2,3,4,5,6]: {np.round(arm1_targets, 2)}", 
+            f"Right Arm Target [2,3,4,5,6]: {np.round(arm1_targets, 2)}", 
             True, (0, 255, 0)
         )
         screen.blit(arm1_target_text, (10, y_pos))
@@ -602,7 +651,7 @@ def main(args: Args):
         y_pos += 25
         arm2_targets = target_joints[7:12]
         arm2_target_text = font.render(
-            f"Arm 2 Target [7,8,9,10,11]: {np.round(arm2_targets, 2)}", 
+            f"Left Arm Target [7,8,9,10,11]: {np.round(arm2_targets, 2)}", 
             True, (0, 255, 0)
         )
         screen.blit(arm2_target_text, (10, y_pos))
@@ -619,14 +668,14 @@ def main(args: Args):
         # Display end effector positions
         y_pos += 35
         ee1_text = font.render(
-            f"Arm 1 End Effector: ({ee_pos_arm1[0]:.3f}, {ee_pos_arm1[1]:.3f}) [Comp Y: {ee_pos_arm1[1] - tip_length * math.sin(pitch_1):.3f}]", 
+            f"Right Arm End Effector: ({ee_pos_arm1[0]:.3f}, {ee_pos_arm1[1]:.3f}) [Comp Y: {ee_pos_arm1[1] - tip_length * math.sin(pitch_1):.3f}]", 
             True, (255, 100, 100)
         )
         screen.blit(ee1_text, (10, y_pos))
         
         y_pos += 25
         ee2_text = font.render(
-            f"Arm 2 End Effector: ({ee_pos_arm2[0]:.3f}, {ee_pos_arm2[1]:.3f}) [Comp Y: {ee_pos_arm2[1] - tip_length * math.sin(pitch_2):.3f}]", 
+            f"Left Arm End Effector: ({ee_pos_arm2[0]:.3f}, {ee_pos_arm2[1]:.3f}) [Comp Y: {ee_pos_arm2[1] - tip_length * math.sin(pitch_2):.3f}]", 
             True, (255, 100, 100)
         )
         screen.blit(ee2_text, (10, y_pos))
@@ -646,7 +695,7 @@ def main(args: Args):
         y_pos += 25
         arm1_actions = action[2:7]
         arm1_action_text = font.render(
-            f"Arm 1 Velocity [2,3,4,5,6]: {np.round(arm1_actions, 2)}", 
+            f"Right Arm Velocity [2,3,4,5,6]: {np.round(arm1_actions, 2)}", 
             True, (255, 255, 255)
         )
         screen.blit(arm1_action_text, (10, y_pos))
@@ -655,7 +704,7 @@ def main(args: Args):
         y_pos += 25
         arm2_actions = action[7:12]
         arm2_action_text = font.render(
-            f"Arm 2 Velocity [7,8,9,10,11]: {np.round(arm2_actions, 2)}", 
+            f"Left Arm Velocity [7,8,9,10,11]: {np.round(arm2_actions, 2)}", 
             True, (255, 255, 255)
         )
         screen.blit(arm2_action_text, (10, y_pos))
@@ -676,8 +725,37 @@ def main(args: Args):
             True, (255, 100, 255)
         )
         screen.blit(pitch_text, (10, y_pos))
+
+        # 在控制界面添加旋转和夹爪信息显示
+        y_pos += 35
         
-        pygame.display.flip()
+        # 显示控制器旋转信息
+        if right_euler is not None:
+            rot_text = font.render(
+                f"Right Controller Rotation: ({right_euler[0]:.3f}, {right_euler[1]:.3f}, {right_euler[2]:.3f})",   #需要先初始化right_euler变量,否则会在热身阶段报错local variable 'right_euler' referenced before assignment
+                True, (100, 200, 255)
+            )
+            screen.blit(rot_text, (10, y_pos))
+            y_pos += 25
+        
+        if left_euler is not None:
+            rot_text = font.render(
+                f"Left Controller Rotation: ({left_euler[0]:.3f}, {left_euler[1]:.3f}, {left_euler[2]:.3f})", 
+                True, (100, 200, 255)
+            )
+            screen.blit(rot_text, (10, y_pos))
+            y_pos += 25
+        
+        # 显示夹爪力度信息
+        grip_text = font.render(
+            f"Gripper Force: Arm1={gripper_force_arm1:.2f}, Arm2={gripper_force_arm2:.2f}", 
+            True, (200, 100, 255)
+        )
+        screen.blit(grip_text, (10, y_pos))
+        y_pos += 25
+        
+
+        pygame.display.flip()   #键盘控制面板逻辑编写结束
         
         obs, reward, terminated, truncated, info = env.step(action)
         step_counter += 1
