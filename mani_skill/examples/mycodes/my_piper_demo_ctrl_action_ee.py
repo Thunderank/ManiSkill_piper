@@ -298,6 +298,7 @@ def main(args: Args):
             # 若有动作则执行
             if np.any(joint_action[:6] != 0) or claw_control:
                 obs, reward, terminated, truncated, info = env.step(joint_action)
+                # print(f"obs为：{obs}")
                 if verbose:
                     print(f"动作: {joint_action.round(2)}")
                     print(f"奖励: {reward}")

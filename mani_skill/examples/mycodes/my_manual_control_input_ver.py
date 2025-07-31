@@ -237,6 +237,7 @@ def main(args: Args):
             
             # 执行动作
             obs, reward, terminated, truncated, info = env.step(joint_action)
+            # print(f"obs为：{obs}")
             if verbose:
                 print(f"动作: {joint_action.round(2)}")
                 print(f"奖励: {reward}")

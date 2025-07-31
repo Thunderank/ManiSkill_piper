@@ -44,8 +44,8 @@ class Piper(BaseAgent):
     keyframes = dict(
         rest=Keyframe(
             pose=sapien.Pose(),
-            # 设置初始关节位置: joint1~joint8
-            qpos=np.array([0.0, 0.0, -1.2, 0.0, 0.0, 0.0, 0.035, -0.035]),   # 8维
+            #设置初始关节位置 arm (joint 1-6)[1-6] + 夹爪 joint[7-8]
+            qpos=np.array([0, 0, -1.2, 0, 0, 0, 0, 0]),   #8维
         )
     )
 

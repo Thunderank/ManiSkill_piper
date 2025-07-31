@@ -488,11 +488,11 @@ class ManiSkillPiperDemo:
             ax.scatter(rp[:, 0], rp[:, 1], rp[:, 2], 
                       c='g', marker='o', alpha=0.6, label='可达')
         
-        # # 绘制不可达点（红色）
-        # if unreachable_points:
-        #     up = np.array(unreachable_points)
-        #     ax.scatter(up[:, 0], up[:, 1], up[:, 2], 
-        #               c='r', marker='x', alpha=0.3, label='不可达')
+        # 绘制不可达点（红色）
+        if unreachable_points:
+            up = np.array(unreachable_points)
+            ax.scatter(up[:, 0], up[:, 1], up[:, 2], 
+                      c='r', marker='x', alpha=0.3, label='不可达')
         
         # 设置坐标轴标签
         ax.set_xlabel('X轴')

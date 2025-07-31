@@ -1,3 +1,7 @@
+"""
+python -m mani_skill.examples.codes.demo_ctrl_action_ee --render-mode="human" --shader="rt-fast" -c "pd_joint_delta_pos" -e "PushCube-v1" -r "fetch"
+"""
+
 import gymnasium as gym
 import numpy as np
 import sapien
@@ -230,8 +234,10 @@ def main(args: Args):
             viewer.paused = args.pause
         env.render()
     
-    action = env.action_space.sample() if env.action_space is not None else None
-    action = np.zeros_like(action)
+    # action = env.action_space.sample() if env.action_space is not None else None
+    # action = np.zeros_like(action)
+
+    action = [0] * 10
     
     # Initialize target joint positions with zeros 默认初始关节角。后续会根据初始末端执行器位置逆运动学解算覆盖
     target_joints = np.zeros_like(action)
@@ -673,6 +679,7 @@ def main(args: Args):
 #-------------------------控制窗口结束-------------------------
 
         obs, reward, terminated, truncated, info = env.step(action)#    执行单步action，获取环境反馈
+        print(f"obs为：{obs}")
         step_counter += 1
         
         if args.render_mode is not None:

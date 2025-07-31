@@ -476,6 +476,7 @@ def main(args: Args):
         pygame.display.flip()
         
         obs, reward, terminated, truncated, info = env.step(action)
+        # print(f"obs为：{obs}")
         step_counter += 1
         
         if args.render_mode is not None:

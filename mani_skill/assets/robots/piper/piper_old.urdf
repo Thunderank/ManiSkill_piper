@@ -4,21 +4,25 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="piper">
+  <!-- dummy_link实际上与base_link重合,作为世界坐标系 -->
   <link name="dummy_link"/>
   <joint name="base_to_dummy" type="fixed">
     <parent link="dummy_link"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+    <!-- xyz表示相对于父坐标系的坐标偏移 rpy表示相对父坐标系的roll pitch yaw -->
   </joint>
 
   <link
     name="base_link">
     <inertial>
+    <!-- innertial描述惯性:平移惯性(mass)和转动惯性(inertia) -->
       <origin 
         xyz="-0.00473641164191482 2.56829134630247E-05 0.041451518036016" 
         rpy="0 0 0" />
       <mass 
         value="1.02" />
+        <!-- mass为该link的质量 -->
       <inertia 
         ixx="0.00267433" 
         ixy="-0.00000073" 
@@ -27,13 +31,14 @@
         iyz="0.0000004" 
         izz="0.00089624" />
     </inertial>
+    <!-- visual和collision分别设置视觉模型和碰撞模型,理论上可以设置得不同 -->
     <visual>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/base_link.STL" />
+          filename="meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -47,7 +52,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/base_link.STL" />
+          filename="meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -74,7 +79,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link1.STL" />
+          filename="meshes/link1.STL" />
       </geometry>
       <material
         name="">
@@ -88,7 +93,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link1.STL" />
+          filename="meshes/link1.STL" />
       </geometry>
     </collision>
   </link>
@@ -132,7 +137,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link2.STL" />
+          filename="meshes/link2.STL" />
       </geometry>
       <material
         name="">
@@ -146,7 +151,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link2.STL" />
+          filename="meshes/link2.STL" />
       </geometry>
     </collision>
   </link>
@@ -191,7 +196,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link3.STL" />
+          filename="meshes/link3.STL" />
       </geometry>
       <material
         name="">
@@ -205,7 +210,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link3.STL" />
+          filename="meshes/link3.STL" />
       </geometry>
     </collision>
   </link>
@@ -250,7 +255,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link4.STL" />
+          filename="meshes/link4.STL" />
       </geometry>
       <material
         name="">
@@ -264,7 +269,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link4.STL" />
+          filename="meshes/link4.STL" />
       </geometry>
     </collision>
   </link>
@@ -308,7 +313,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link5.STL" />
+          filename="meshes/link5.STL" />
       </geometry>
       <material
         name="">
@@ -322,7 +327,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link5.STL" />
+          filename="meshes/link5.STL" />
       </geometry>
     </collision>
   </link>
@@ -366,7 +371,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link6.STL" />
+          filename="meshes/link6.STL" />
       </geometry>
       <material
         name="">
@@ -380,7 +385,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link6.STL" />
+          filename="meshes/link6.STL" />
       </geometry>
     </collision>
   </link>
@@ -424,7 +429,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/gripper_base.STL" />
+          filename="meshes/gripper_base.STL" />
       </geometry>
       <material
         name="">
@@ -438,7 +443,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/gripper_base.STL" />
+          filename="meshes/gripper_base.STL" />
       </geometry>
     </collision>
   </link> 
@@ -475,7 +480,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link7.STL" />
+          filename="meshes/link7.STL" />
       </geometry>
       <material
         name="">
@@ -489,7 +494,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link7.STL" />
+          filename="meshes/link7.STL" />
       </geometry>
     </collision>
   </link>
@@ -508,7 +513,7 @@
     <limit
       lower="0"
       upper="0.035"
-      effort="100"
+      effort="10"
       velocity="1" />
   </joint>
   <link
@@ -533,7 +538,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link8.STL" />
+          filename="meshes/link8.STL" />
       </geometry>
       <material
         name="">
@@ -547,7 +552,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://piper_description/meshes/link8.STL" />
+          filename="meshes/link8.STL" />
       </geometry>
     </collision>
   </link>
@@ -566,7 +571,7 @@
     <limit
       lower="-0.035"
       upper="0"
-      effort="100"
+      effort="10"
       velocity="1" />
   </joint>
 </robot>
