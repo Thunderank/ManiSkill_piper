@@ -11,7 +11,8 @@ import numpy as np
 
 
 # 设置oculus_reader模块路径
-sys.path[0] = os.path.abspath("/home/robot/Desktop/3DGS/oculus_reader")
+sys.path.append(os.path.abspath("/home/robot/Desktop/3DGS/oculus_reader"))   #引入oculus仓库目录
+
 from oculus_reader.reader import OculusReader
 
 def rotation_matrix_to_quaternion(R):

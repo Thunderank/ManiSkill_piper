@@ -16,9 +16,7 @@ from mani_skill.utils.wrappers import RecordEpisode
 # Add import for OculusReader
 import sys
 import os
-# sys.path.append(os.path.abspath("/home/robot/Desktop/3DGS/oculus_reader")) #将oculus工作目录添加到path中  无效
-sys.path[0] = os.path.abspath("/home/robot/Desktop/3DGS/oculus_reader")   #有效,需将首位路径设为oculus仓库目录.或者运行代码前先cd至其仓库目录
-# os.chdir("/home/robot/Desktop/3DGS/oculus_reader")  #无效.
+sys.path.append(os.path.abspath("/home/robot/Desktop/3DGS/oculus_reader"))   #引入oculus仓库目录
 from oculus_reader.reader import OculusReader
 
 import tyro
