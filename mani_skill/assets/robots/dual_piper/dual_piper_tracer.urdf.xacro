@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 使用指令生成urdf：xacro dual_piper_tracer.urdf.xacro > dual_piper_tracer.urdf  -->
+<!-- 使用指令检查urdf是否正确：check_urdf dual_piper_tracer.urdf -->
+<robot name="dual_piper_tracer" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- 材料定义 -->
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0 0 1"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.2 0.2 0.2 1"/>
+  </material>
+  <material name="white">
+    <color rgba="0.8 0.8 0.8 1"/>
+  </material>
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+<!-- 引入双臂。在文件最开头引入以保持更换底座时关节映射顺序保持一致。
+但事实证明robot.qpos()跟urdf申明顺序无关，而与joint绑定顺序有关。
+对tracer底座而言，底座有8个自由度，因此左臂对应第9-16,右臂对应17-24 -->
+  <xacro:include filename="./piper_left_arm.urdf.xacro" />
+  <joint name="left_arm_to_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_arm_base_link"/>
+    <origin xyz="0.2 0.25 0.63" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:include filename="./piper_right_arm.urdf.xacro" />
+  <joint name="right_arm_to_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_arm_base_link"/>
+    <origin xyz="0.2 -0.25 0.63" rpy="0 0 0"/>
+  </joint>
+
+
+  <!-- ================ 虚拟底座关节  ================ -->
+  <!-- 对于旋转关节（revolute/continuous），设置axis xyz 100代表绕x轴旋转，010y轴，001z轴 -->
+  <!-- 对于移动关节（prismatic）：axis xyz="1 0 0" 表示沿X轴平移 axis xyz="0 1 0" 表示沿Y轴平移 axis xyz="0 0 1" 表示沿Z轴平移 -->
+  <link name="root">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.00" ixy="0.00" ixz="0.00" iyy="0.00" iyz="0.00" izz="0.00"/>
+    </inertial>
+  </link>
+  <link name="root_arm_1_link_1">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.00" ixy="0.00" ixz="0.00" iyy="0.00" iyz="0.00" izz="0.00"/>
+    </inertial>
+  </link>
+  <link name="root_arm_1_link_2">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.00" ixy="0.00" ixz="0.00" iyy="0.00" iyz="0.00" izz="0.00"/>
+    </inertial>
+  </link>
+  <joint name="root_x_axis_joint" type="prismatic">
+    <parent link="root"/>
+    <child link="root_arm_1_link_1"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100" lower="-20" upper="20" velocity="0.50"/>
+    <dynamics damping="10.0" friction="10"/>
+  </joint>
+  <joint name="root_y_axis_joint" type="prismatic">
+    <parent link="root_arm_1_link_1"/>
+    <child link="root_arm_1_link_2"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100" lower="-20" upper="20" velocity="0.50"/>
+    <dynamics damping="10.0" friction="10"/>
+  </joint>
+  <!-- 后续恢复z轴的旋转属性和绑定的link -->
+  <!-- <joint name="root_z_rotation_joint" type="continuous">
+    <parent link="root_arm_1_link_2"/>
+    <child link="base_link"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="10.0" friction="1"/>
+  </joint> -->
+
+  <!-- 将基座改写为固定，先修改抓取任务逻辑 -->
+  <joint name="root_z_rotation_joint" type="fixed">
+    <parent link="root"/>
+    <child link="base_link"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="10.0" friction="1"/>
+  </joint>
+
+  <!-- ================ 移动底盘 ================ -->
+  <!-- 此为原始mesh文件，是竖着的 -->
+  <!-- <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <mesh filename="meshes/tracer_base_link.dae"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.57 0 0"/>
+      <geometry>
+        <mesh filename="meshes/tracer_base_link.STL"/>
+      </geometry>
+    </collision>
+  </link> -->
+
+<!-- 纠正后的tracer底盘 -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/corrected_tracer_base_link.glb"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/corrected_tracer_base_link.glb"/>
+      </geometry>
+    </collision>
+  </link>
+  
+  <!-- 主动轮 -->
+  <link name="right_wheel_link">
+    <inertial>
+      <mass value="6"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.717" ixy="0" ixz="0" iyy="0.136" iyz="0" izz="0.717"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/tracer_wheel.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="right_wheel" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel_link"/>
+    <origin xyz="0 -0.17 -0.082" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="left_wheel_link">
+    <inertial>
+      <mass value="6"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.717" ixy="0" ixz="0" iyy="0.136" iyz="0" izz="0.717"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/tracer_wheel.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="left_wheel" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel_link"/>
+    <origin xyz="0 0.17 -0.082" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- 万向轮 -->
+  <link name="fr_castor_link">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/castor_joint.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="fr_castor_wheel" type="continuous">
+    <origin xyz="0.18955 -0.17 -0.038" rpy="-1.57 0 0"/>
+    <parent link="base_link"/>
+    <child link="fr_castor_link"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="fl_castor_link">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/castor_joint.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="fl_castor_wheel" type="continuous">
+    <origin xyz="0.18955 0.17 -0.038" rpy="-1.57 0 0"/>
+    <parent link="base_link"/>
+    <child link="fl_castor_link"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="br_castor_link">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/castor_joint.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="br_castor_wheel" type="continuous">
+    <origin xyz="-0.18955 -0.17 -0.038" rpy="-1.57 0 0"/>
+    <parent link="base_link"/>
+    <child link="br_castor_link"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="bl_castor_link">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/castor_joint.dae"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="bl_castor_wheel" type="continuous">
+    <origin xyz="-0.18955 0.17 -0.038" rpy="-1.57 0 0"/>
+    <parent link="base_link"/>
+    <child link="bl_castor_link"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- box2_link，作为底座的补充结构 -->
+  <!-- 原始mesh.stl版本，对基座进行了旋转，从而恢复水平 -->
+  <!-- <link name="box2_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/box2_Link.STL"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/box2_Link.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="box2_to_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="box2_link"/>
+    <origin xyz="0 0 0" rpy="-0.06 0 0"/>
+  </joint> -->
+
+
+<!-- blender修改box2的mesh后的版本 -->
+  <link name="box2_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/box2_Link_upright.STL"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/box2_Link_upright.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="box2_to_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="box2_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+
+
+
+  <!-- ================ 相机系统 ================ -->
+  <!-- 使用d435相机 -->
+  <!-- <link name="left_camera">
+    <visual>
+      <origin xyz="0 -0.032 0" rpy="1.57 0 1.57"/>
+      <geometry>
+        <mesh filename="meshes/d435.dae"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="left_camera_joint" type="fixed">
+    <parent link="left_arm_gripper_base"/>
+    <child link="left_camera"/>
+    <origin xyz="0.07 0.032 0.065" rpy="0 0.4 0"/>
+  </joint>
+
+  <link name="right_camera">
+    <visual>
+      <origin xyz="0 -0.032 0" rpy="3.14 3.14 1.57"/>
+      <geometry>
+        <mesh filename="meshes/d435.dae"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="right_camera_joint" type="fixed">
+    <parent link="right_arm_gripper_base"/>
+    <child link="right_camera"/>
+    <origin xyz="0.07 0.032 0.065" rpy="0 0.4 0"/>
+  </joint> -->
+
+<!-- 使用大白相机 -->
+  <link name="left_arm_camera">
+    <visual>
+      <origin xyz="-0.05 0 0.03" rpy="0 3.14159265358 1.57079632679"/>
+      <geometry>
+        <mesh filename="meshes/dabai.STL"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="left_arm_camera_joint" type="fixed">
+    <parent link="left_arm_gripper_base"/>
+    <child link="left_arm_camera"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="right_arm_camera">
+    <visual>
+      <origin xyz="-0.05 0 0.03" rpy="0 3.14159265358 1.57079632679"/>
+      <geometry>
+        <mesh filename="meshes/dabai.STL"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="right_arm_camera_joint" type="fixed">
+    <parent link="right_arm_gripper_base"/>
+    <child link="right_arm_camera"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+
+  <link name="global_camera_link"/>
+  <joint name="global_camera_joint" type="fixed">
+    <parent link="root"/>
+    <child link="global_camera_link"/>
+    <origin xyz="0 0.0 1.0" rpy="0 0 0"/>
+  </joint>
+</robot>

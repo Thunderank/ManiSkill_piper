@@ -640,6 +640,7 @@ class BaseEnv(gym.Env):
             action (torch.Tensor): The most recent action.
             info (Dict): The info dictionary.
         """
+        # print(f"sapien_env中get_reward获取的obs：{obs},action：{action},info：{info}")
         if self._reward_mode == "sparse":
             reward = self.compute_sparse_reward(obs=obs, action=action, info=info)
         elif self._reward_mode == "dense":

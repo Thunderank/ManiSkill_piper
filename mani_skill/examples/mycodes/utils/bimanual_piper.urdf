@@ -1,0 +1,302 @@
+<?xml version="1.0" ?>
+<robot name="bimanual_piper">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://meshes/base_link_aloha.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="table">
+    <visual>
+      <geometry>
+        <box size="0.485 0.295 0.47"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="table_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="table"/>
+    <origin xyz="0.7 0.0 0.4" rpy="0 0 1.57"/>
+  </joint>
+  <link name="piper_left_left">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/base_link.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/shoulder_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link1.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/upper_arm_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link2.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/upper_forearm_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link3.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/lower_forearm_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link4.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/wrist_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link5.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/gripper_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link6.STL"/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0 0.08 -0.0" rpy="0.5 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/dabai.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/camera_focus_left"/>
+  <link name="piper_left/left_finger_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link7.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_left/right_finger_link_left">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link8.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="piper_left/waist_left" type="fixed">
+    <limit lower="-2.618" upper="2.618" effort="100" velocity="1"/>
+    <parent link="piper_left_left"/>
+    <child link="piper_left/shoulder_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_left/shoulder_left" type="fixed">
+    <limit lower="0" upper="3.14" effort="100" velocity="1"/>
+    <parent link="piper_left/shoulder_link_left"/>
+    <child link="piper_left/upper_arm_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_left/elbow_left" type="fixed">
+    <limit lower="-2.697" upper="0" effort="100" velocity="1"/>
+    <parent link="piper_left/upper_arm_link_left"/>
+    <child link="piper_left/upper_forearm_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_left/forearm_roll_left" type="fixed">
+    <limit lower="-1.832" upper="1.832" effort="100" velocity="1"/>
+    <parent link="piper_left/upper_forearm_link_left"/>
+    <child link="piper_left/lower_forearm_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_left/wrist_angle_left" type="fixed">
+    <limit lower="-1.22" upper="1.22" effort="100" velocity="1"/>
+    <parent link="piper_left/lower_forearm_link_left"/>
+    <child link="piper_left/wrist_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_left/wrist_rotate_left" type="fixed">
+    <limit lower="-3.14" upper="3.14" effort="100" velocity="1"/>
+    <parent link="piper_left/wrist_link_left"/>
+    <child link="piper_left/gripper_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_left/left_finger_left" type="slide">
+    <limit lower="0" upper="0.04" effort="100" velocity="1"/>
+    <parent link="piper_left/gripper_link_left"/>
+    <child link="piper_left/left_finger_link_left"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+  <joint name="piper_left/right_finger_left" type="slide">
+    <limit lower="-0.04" upper="0" effort="100" velocity="1"/>
+    <parent link="piper_left/gripper_link_left"/>
+    <child link="piper_left/right_finger_link_left"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="left_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="piper_left_left"/>
+    <origin xyz="0.234 0.303 0.761" rpy="0 0 0"/>
+  </joint>
+  <link name="piper_right_right">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/base_link.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/shoulder_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link1.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/upper_arm_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link2.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/upper_forearm_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link3.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/lower_forearm_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link4.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/wrist_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link5.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/gripper_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link6.STL"/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0 0.08 -0.0" rpy="0.5 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/dabai.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/camera_focus_right"/>
+  <link name="piper_right/left_finger_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link7.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="piper_right/right_finger_link_right">
+    <inertial/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/link8.STL"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="piper_right/waist_right" type="fixed">
+    <limit lower="-2.618" upper="2.618" effort="100" velocity="1"/>
+    <parent link="piper_right_right"/>
+    <child link="piper_right/shoulder_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_right/shoulder_right" type="fixed">
+    <limit lower="0" upper="3.14" effort="100" velocity="1"/>
+    <parent link="piper_right/shoulder_link_right"/>
+    <child link="piper_right/upper_arm_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_right/elbow_right" type="fixed">
+    <limit lower="-2.697" upper="0" effort="100" velocity="1"/>
+    <parent link="piper_right/upper_arm_link_right"/>
+    <child link="piper_right/upper_forearm_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_right/forearm_roll_right" type="fixed">
+    <limit lower="-1.832" upper="1.832" effort="100" velocity="1"/>
+    <parent link="piper_right/upper_forearm_link_right"/>
+    <child link="piper_right/lower_forearm_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_right/wrist_angle_right" type="fixed">
+    <limit lower="-1.22" upper="1.22" effort="100" velocity="1"/>
+    <parent link="piper_right/lower_forearm_link_right"/>
+    <child link="piper_right/wrist_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_right/wrist_rotate_right" type="fixed">
+    <limit lower="-3.14" upper="3.14" effort="100" velocity="1"/>
+    <parent link="piper_right/wrist_link_right"/>
+    <child link="piper_right/gripper_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="piper_right/left_finger_right" type="slide">
+    <limit lower="0" upper="0.04" effort="100" velocity="1"/>
+    <parent link="piper_right/gripper_link_right"/>
+    <child link="piper_right/left_finger_link_right"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+  <joint name="piper_right/right_finger_right" type="slide">
+    <limit lower="-0.04" upper="0" effort="100" velocity="1"/>
+    <parent link="piper_right/gripper_link_right"/>
+    <child link="piper_right/right_finger_link_right"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="right_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="piper_right_right"/>
+    <origin xyz="0.234 -0.303 0.761" rpy="0 0 0"/>
+  </joint>
+</robot>

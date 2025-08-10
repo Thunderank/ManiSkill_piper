@@ -1,0 +1,60 @@
+<mujocoinclude>
+<!--    <option timestep='0.0025' iterations="50" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>-->
+
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1="1 1 1" rgb2=".01 .01 .01" width="256" height="256"/>
+
+        <mesh name="base_link_aloha" file="mesh/base_link_aloha.STL"/>
+        <mesh name="box1_Link" file="mesh/box1_Link.STL"/>
+        <mesh name="box2_Link" file="mesh/box2_Link.STL"/>
+        <mesh name="boxbox" scale="0.002 0.002 0.001" file="mesh/boxbox.stl"/>
+        <mesh name="dish" scale="0.001 0.001 0.001" file="mesh/dish.STL"/>
+    </asset>
+
+    <visual>
+        <map fogstart="1.5" fogend="5" force="0.1" znear="0.01"/>
+        <quality shadowsize="4096" offsamples="4"/>
+        <headlight ambient="0.4 0.4 0.4"/>
+        <scale framewidth="0.02" framelength="0.3" contactwidth="0.1"/>
+    </visual>
+
+    <worldbody>
+        <light castshadow="false" directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='-1 -1 1'
+               dir='1 1 -1'/>
+        <light directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='1 -1 1' dir='-1 1 -1'/>
+        <light castshadow="false" directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='0 1 1'
+               dir='0 -1 -1'/>
+
+        <!-- <geom type="plane" size="3 2 .01" material="grid"/> -->
+
+        <geom pos="0 0 0" euler="0 0 0" type="mesh" group="1" density="7.85" rgba="0.79216 0.81961 0.93333 1" mesh="base_link_aloha"/>
+        <geom pos="0 0 0.155" euler="0 0 0" type="mesh" group="1" density="7.85" rgba="0.79216 0.81961 0.93333 1" mesh="box2_Link"/>
+        <geom pos="0.2 -0.01 0.863" euler="0 1.57 1.57" type="mesh" group="1" density="2.83" rgba="0.898039 0.917647 0.929412 1" mesh="dabai"/>
+
+        <body name="table" pos="0.7 0.0 0.4" euler="0 0 1.57">
+            <geom name='table' size="0.485 0.295 0.47" type="box" rgba="0.6 0.6 0.55 1" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" margin="0.0" />
+        </body>
+
+        <body name="midair" pos="0 .6 0.2">
+            <site pos="0 0 0" size="0.01" type="sphere" name="midair" rgba="1 0 0 0"/>
+        </body>
+
+        <camera name="top" pos="1 0.0 2.0" fovy="78" mode="targetbody" target="table"/>
+        <camera name="angle" pos="1.5 -1.0 1.5" fovy="55" mode="targetbody" target="table"/>
+
+        <!-- <camera name="front_close" pos="1 -2.0 1.0" fovy="78" mode="targetbody" target="piper_left/camera_focus"/> -->
+        <!-- <camera name="left_pillar" pos="-0.5 0.2 0.6" fovy="78" mode="targetbody" target="table"/>
+        <camera name="right_pillar" pos="0.5 0.2 0.6" fovy="78" mode="targetbody" target="table"/> -->
+
+        <!-- <camera name="front" pos="0.2 0 2" fovy="55" mode="targetbody" target="table"/> -->
+        <!-- <geom type="mesh" pos="0.2 0 2" euler="1.57 1.57 0" density="2.83" rgba="0.898039 0.917647 0.929412 1" mesh="dabai"/> -->
+        <body name="camera_base_link" pos="0 0 0" euler="1.57 1.57 0">
+            <camera name="front" pos="0 1.4 0.2" euler="0.785 3.14 0" fovy="55"/>
+            <geom type="mesh" pos="0 1.4 0.2" euler="0.785 0 0" density="2.83" rgba="0.898039 0.917647 0.929412 1" mesh="dabai"/>
+        </body>
+
+    </worldbody>
+
+
+
+</mujocoinclude>

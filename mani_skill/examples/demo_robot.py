@@ -6,7 +6,7 @@ import argparse
 
 import gymnasium as gym
 import mani_skill
-from mani_skill.agents.controllers.base_controller import DictController
+# from mani_skill.agents.controllers.base_controller import DictController
 from mani_skill.envs.sapien_env import BaseEnv
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
@@ -64,7 +64,7 @@ def main():
                 break
         if kf.qpos is not None:
             env.agent.robot.set_qpos(kf.qpos)
-            env.agent.controller.reset()
+            # env.agent.controller.reset()
         if kf.qvel is not None:
             env.agent.robot.set_qvel(kf.qvel)
         env.agent.robot.set_pose(kf.pose)
@@ -86,10 +86,11 @@ def main():
             env.step(env.action_space.sample() * 0)
         elif args.keyframe_actions:
             assert kf is not None, "this robot has no keyframes, cannot use it to set actions"
-            if isinstance(env.agent.controller, DictController):
-                env.step(env.agent.controller.from_qpos(kf.qpos))
-            else:
-                env.step(kf.qpos)
+            # if isinstance(env.agent.controller, DictController):
+                # env.step(env.agent.controller.from_qpos(kf.qpos))
+            # else:
+                # env.step(kf.qpos)
+            env.step(kf.qpos)
         viewer = env.render()
 
 if __name__ == "__main__":

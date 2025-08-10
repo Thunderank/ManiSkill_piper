@@ -1,0 +1,67 @@
+<mujoco>
+    <!-- <option timestep='0.01'/> -->
+    <include file="scene.xml"/>
+    <include file="piper_dependencies.xml"/>
+    <worldbody>
+        <include file="piper_left.xml" />
+        <include file="piper_right.xml" />
+
+        <body name="blue_box" pos="0.5 0.3 0.895">
+            <joint name="blue_box_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom name="blue_box" pos="0 0 0" size="0.02 0.02 0.02" type="box" rgba="0 0 0.8 1" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+        <body name="red_box" pos="0.5 -0.3 0.895">
+            <joint name="red_box_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom name="red_box" pos="0 0 0" size="0.02 0.02 0.02" type="box" rgba="0.8 0 0 1" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+
+        <!-- <body name="blue_dish" pos="0.65 0.39 0.875" euler="1.5707963268 0 0">
+            <joint name="blue_dish_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0.09 0 0.09" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom name='blue_dish' type="mesh" rgba="0 0 1 1" mesh="dish" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+        <body name="red_dish" pos="0.65 -0.21 0.875" euler="1.5707963268 0 0">
+            <joint name="red_dish_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0.09 0 0.09" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom name='red_dish' type="mesh" rgba="1 0 0 1" mesh="dish" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body> -->
+        <body name="blue_dish" pos="0.8 0.21 0.95">
+            <joint name="blue_dish_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0.09 0 0.09" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom name='blue_dish' type="mesh" rgba="0 0 0.8 1" mesh="boxbox" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+        <body name="red_dish" pos="0.8 -0.21 0.95">
+            <joint name="red_dish_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0.09 0 0.09" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom name='red_dish' type="mesh" rgba="0.8 0 0 1" mesh="boxbox" condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+    </worldbody>
+
+    <actuator>
+        <position ctrllimited="true" ctrlrange="-2.618 2.618" joint="piper_left/waist" kp="800"  user="1" forcelimited="true" forcerange="-150 150"/>
+        <position ctrllimited="true" ctrlrange="0 3.14" joint="piper_left/shoulder" kp="1600"  user="1" forcelimited="true" forcerange="-300 300"/>
+        <position ctrllimited="true" ctrlrange="-2.697 0" joint="piper_left/elbow" kp="800"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.832 1.832" joint="piper_left/forearm_roll" kp="10"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.22 1.22" joint="piper_left/wrist_angle" kp="50"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="piper_left/wrist_rotate" kp="20"  user="1"/>
+        <position ctrllimited="true" ctrlrange="0.0 0.04" joint="piper_left/left_finger" kp="200"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-0.04 -0.0" joint="piper_left/right_finger" kp="200"  user="1"/>
+
+        <position ctrllimited="true" ctrlrange="-2.618 2.618" joint="piper_right/waist" kp="800"  user="1" forcelimited="true" forcerange="-150 150"/>
+        <position ctrllimited="true" ctrlrange="0 3.14" joint="piper_right/shoulder" kp="1600"  user="1" forcelimited="true" forcerange="-300 300"/>
+        <position ctrllimited="true" ctrlrange="-2.697 0" joint="piper_right/elbow" kp="800"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.832 1.832" joint="piper_right/forearm_roll" kp="10"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.22 1.22" joint="piper_right/wrist_angle" kp="50"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="piper_right/wrist_rotate" kp="20"  user="1"/>
+        <position ctrllimited="true" ctrlrange="0.0 0.04" joint="piper_right/left_finger" kp="200"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-0.04 -0.0" joint="piper_right/right_finger" kp="200"  user="1"/>
+
+    </actuator>
+
+    <keyframe>
+        <key qpos="0 0 0 0 0 0 0 0  0 0 0 0 0 0 0 0  0.2 0.5 0.05 1 0 0 0 0.2 0.5 0.05 1 0 0 0 0.2 0.5 0.05 1 0 0 0 0.2 0.5 0.05 1 0 0 0"/>
+    </keyframe>
+
+</mujoco>

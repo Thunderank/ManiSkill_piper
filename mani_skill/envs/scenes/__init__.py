@@ -20,3 +20,4 @@ for k, scene_builder_spec in REGISTERED_SCENE_BUILDERS.items():
         max_episode_steps=200,
         scene_builder_cls=k,
     )(SceneManipulationEnv)
+

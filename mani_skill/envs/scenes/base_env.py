@@ -6,7 +6,7 @@ import sapien.physx as physx
 import torch
 from sapien import Pose
 
-from mani_skill.agents.robots import Fetch, Panda, Piper
+from mani_skill.agents.robots import Fetch, Panda, Piper, dual_Piper
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.sensors.camera import CameraConfig
 from mani_skill.utils import sapien_utils
@@ -37,8 +37,8 @@ class SceneManipulationEnv(BaseEnv):
         init_config_idxs (optional): which init configs (additional init options) to sample. Your scene_builder_cls may or may not require these.
     """
 
-    SUPPORTED_ROBOTS = ["panda", "fetch", "piper"]
-    agent: Union[Panda, Fetch, Piper]
+    SUPPORTED_ROBOTS = ["panda", "fetch", "piper", "dual_piper"]
+    agent: Union[Panda, Fetch, Piper, dual_Piper]
 
     def __init__(
         self,

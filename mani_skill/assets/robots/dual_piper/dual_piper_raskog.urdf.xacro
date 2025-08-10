@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<!-- 使用指令生成urdf：xacro dual_piper_raskog.urdf.xacro dual_piper_raskog.urdf  -->
+<!-- 使用指令检查urdf是否正确：check_urdf dual_piper_raskog.urdf -->
+<robot name="dual_piper_raskog" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- 材料定义 -->
+  <material name="white"><color rgba="0.1 0.1 0.1 1"/></material>
+  <material name="grey"><color rgba="0.6 0.6 0.6 1"/></material>
+  <material name="blue"><color rgba="0.2 0.3 0.6 1"/></material>
+  <material name="green"><color rgba="0.6 0.5 0.1 1"/></material>
+  <material name="motor"><color rgba="0.02 0.02 0.02 1"/></material>
+
+  <!-- ================ 如家移动底盘 ================ -->
+
+<!-- 定义以下三个虚拟link和joint用于控制如家raskog底座小车，分别表示向前后移动、向左右移动、向左右转 -->
+  <link name="root">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.00" ixy="0.00" ixz="0.00" iyy="0.00" iyz="0.00" izz="0.00"/>
+    </inertial>
+  </link>
+
+  <link name="root_arm_1_link_1">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.00" ixy="0.00" ixz="0.00" iyy="0.00" iyz="0.00" izz="0.00"/>
+    </inertial>
+  </link>
+
+  <link name="root_arm_1_link_2">
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0.00" ixy="0.00" ixz="0.00" iyy="0.00" iyz="0.00" izz="0.00"/>
+    </inertial>
+  </link>
+
+  <joint name="root_x_axis_joint" type="prismatic">
+    <parent link="root"/>
+    <child link="root_arm_1_link_1"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100" lower="-20" upper="20" velocity="0.50"/>
+    <dynamics damping="10.0" friction="10"/>
+  </joint>
+
+  <joint name="root_y_axis_joint" type="prismatic">
+    <parent link="root_arm_1_link_1"/>
+    <child link="root_arm_1_link_2"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="100" lower="-20" upper="20" velocity="0.50"/>
+    <dynamics damping="10.0" friction="10"/>
+  </joint>
+
+  <joint name="root_z_rotation_joint" type="continuous">
+    <parent link="root_arm_1_link_2"/>
+    <child link="base_link"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="10.0" friction="1"/>
+  </joint>
+
+<!-- base_link中封装raskog的所有部件，代表整个底座 -->
+  <link name="base_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0.0 0.38"/>
+      <mass value="70.1294"/>
+      <inertia ixx="1.225" ixy="0.0099" ixz="0.0062" iyy="1.2853" iyz="-0.0034" izz="0.987"/>
+    </inertial>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.22 0.73"/>
+      <geometry>
+        <box size="0.35 0.01 0.09"/>
+      </geometry>
+      <material name="green">
+      </material>
+    </collision>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.22 0.73"/>
+      <geometry>
+        <box size="0.35 0.01 0.09"/>
+      </geometry>
+      <material name="green">
+      </material>
+    </collision>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0.17 0 0.73"/>
+      <geometry>
+        <box size="0.01 0.45 0.09"/>
+      </geometry>
+      <material name="green">
+      </material>
+    </collision>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.17 0 0.73"/>
+      <geometry>
+        <box size="0.01 0.45 0.09"/>
+      </geometry>
+      <material name="green">
+      </material>
+    </collision>
+  
+    <visual name="raskog">
+      <origin
+        xyz="-0.01668 0.55732 0.895"
+        rpy="1.5708 0 0" />
+      <geometry>
+        <mesh filename="meshes/raskogbody.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="blue">
+      </material>
+    </visual>
+
+    <visual name="raskogwheel1">
+      <origin
+        xyz="-0.01668 0.55732 0.895"
+        rpy="1.5708 0 0" />
+      <geometry>
+        <mesh filename="meshes/raskogwheel1.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="grey">
+      </material>
+    </visual>
+
+    <visual name="raskogwheel2">
+      <origin
+        xyz="-0.01668 0.55732 0.895"
+        rpy="1.5708 0 0" />
+      <geometry>
+        <mesh filename="meshes/raskogwheel2.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+      <material name="motor">
+      </material>
+    </visual>
+
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.05"/>
+      <geometry>
+        <box size="0.4348 0.51 0.1"/>
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.395"/>
+      <geometry>
+        <box size="0.35 0.45 0.59"/>
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.24 0.44"/>
+      <geometry>
+        <box size="0.1 0.04 0.68"/>
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.24 0.44"/>
+      <geometry>
+        <box size="0.1 0.04 0.68"/>
+      </geometry>
+    </collision>
+  </link>
+
+
+  <!-- 左臂 -->
+  <xacro:include filename="./piper_left_arm.urdf.xacro" />
+
+  <!-- 连接左臂到底座 -->
+  <joint name="left_arm_to_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_arm_base_link"/>
+    <origin xyz="-0.02 -0.15 0.69" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 右臂 -->
+  <xacro:include filename="./piper_right_arm.urdf.xacro" />
+  
+  <!-- 连接右臂到底座 -->
+  <joint name="right_arm_to_base_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="right_arm_base_link"/>
+  <origin xyz="-0.02 0.15 0.69" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 相机系统 -->
+  <link name="left_camera">
+    <visual>
+      <origin xyz="-0.045 0 0.05" rpy="0 0 1.57"/>
+      <geometry>
+        <mesh filename="meshes/d435.dae"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="left_camera_joint" type="fixed">
+    <parent link="left_gripper_base"/>
+    <child link="left_camera"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="right_camera">
+    <visual>
+      <origin xyz="-0.045 0 0.05" rpy="0 0 1.57"/>
+      <geometry>
+        <mesh filename="meshes/d435.dae"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="right_camera_joint" type="fixed">
+    <parent link="right_gripper_base"/>
+    <child link="right_camera"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="global_camera_link"/>
+  <joint name="global_camera_joint" type="fixed">
+    <parent link="root"/>
+    <child link="global_camera_link"/>
+    <origin xyz="1.0 0.0 2.0" rpy="0 0.5 0"/>
+  </joint>
+</robot>

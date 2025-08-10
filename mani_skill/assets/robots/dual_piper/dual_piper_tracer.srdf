@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="dual_piper">
+    <!-- 左臂组定义 -->
+    <group name="left_arm">
+        <chain base_link="tracer_base_link" tip_link="left_arm_gripper_base"/>
+    </group>
+    
+    <!-- 右臂组定义 -->
+    <group name="right_arm">
+        <chain base_link="tracer_base_link" tip_link="right_arm_gripper_base"/>
+    </group>
+    
+    <!-- 左夹爪组 -->
+    <group name="left_arm_gripper">
+        <joint name="left_arm_joint7"/>
+        <joint name="left_arm_joint8"/>
+    </group>
+    
+    <!-- 右夹爪组 -->
+    <group name="right_arm_gripper">
+        <joint name="right_arm_joint7"/>
+        <joint name="right_arm_joint8"/>
+    </group>
+    
+    <!-- 整个机器人组 -->
+    <group name="dual_piper">
+        <group name="left_arm"/>
+        <group name="right_arm"/>
+        <group name="left_arm_gripper"/>
+        <group name="right_arm_gripper"/>
+    </group>
+    
+    <!-- 组状态定义 -->
+    <group_state name="zero_left_arm" group="left_arm">
+        <joint name="left_arm_joint1" value="0"/>
+        <joint name="left_arm_joint2" value="0"/>
+        <joint name="left_arm_joint3" value="0"/>
+        <joint name="left_arm_joint4" value="0"/>
+        <joint name="left_arm_joint5" value="0"/>
+        <joint name="left_arm_joint6" value="0"/>
+    </group_state>
+    
+    <group_state name="zero_right_arm" group="right_arm">
+        <joint name="right_arm_joint1" value="0"/>
+        <joint name="right_arm_joint2" value="0"/>
+        <joint name="right_arm_joint3" value="0"/>
+        <joint name="right_arm_joint4" value="0"/>
+        <joint name="right_arm_joint5" value="0"/>
+        <joint name="right_arm_joint6" value="0"/>
+    </group_state>
+    
+    <group_state name="close_left_arm_gripper" group="left_arm_gripper">
+        <joint name="left_arm_joint7" value="0"/>
+        <joint name="left_arm_joint8" value="0"/>
+    </group_state>
+    
+    <group_state name="open_left_arm_gripper" group="left_arm_gripper">
+        <joint name="left_arm_joint7" value="0.035"/>
+        <joint name="left_arm_joint8" value="-0.035"/>
+    </group_state>
+    
+    <group_state name="close_right_arm_gripper" group="right_arm_gripper">
+        <joint name="right_arm_joint7" value="0"/>
+        <joint name="right_arm_joint8" value="0"/>
+    </group_state>
+    
+    <group_state name="open_right_arm_gripper" group="right_arm_gripper">
+        <joint name="right_arm_joint7" value="0.035"/>
+        <joint name="right_arm_joint8" value="-0.035"/>
+    </group_state>
+    
+    <!-- 虚拟关节 -->
+    <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="tracer_base_link"/>
+    
+    <!-- 禁用碰撞 -->
+    <!-- 基础底座与手臂 -->
+    <disable_collisions link1="tracer_base_link" link2="left_arm_base_link" reason="Adjacent"/>
+    <disable_collisions link1="tracer_base_link" link2="right_arm_base_link" reason="Adjacent"/>
+    
+    <!-- 左臂内部链接 -->
+    <disable_collisions link1="left_arm_base_link" link2="left_arm_link1" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_link1" link2="left_arm_link2" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_link2" link2="left_arm_link3" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_link3" link2="left_arm_link4" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_link4" link2="left_arm_link5" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_link5" link2="left_arm_link6" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_link6" link2="left_arm_gripper_base" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_gripper_base" link2="left_arm_link7" reason="Adjacent"/>
+    <disable_collisions link1="left_arm_gripper_base" link2="left_arm_link8" reason="Adjacent"/>
+    <!-- 夹爪内部 -->
+    <disable_collisions link1="left_arm_link7" link2="left_arm_link8" reason="Default"/>
+    
+    <!-- 右臂内部链接 -->
+    <disable_collisions link1="right_arm_base_link" link2="right_arm_link1" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link1" link2="right_arm_link2" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link2" link2="right_arm_link3" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link3" link2="right_arm_link4" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link4" link2="right_arm_link5" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link5" link2="right_arm_link6" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link6" link2="right_arm_gripper_base" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_gripper_base" link2="right_arm_link7" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_gripper_base" link2="right_arm_link8" reason="Adjacent"/>
+    <disable_collisions link1="right_arm_link7" link2="right_arm_link8" reason="Default"/>
+    
+</robot>

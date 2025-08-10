@@ -33,7 +33,6 @@ from mani_skill.utils.scene_builder.table import TableSceneBuilder
 from mani_skill.utils.structs import Pose
 from mani_skill.utils.structs.types import Array, GPUMemoryConfig, SimConfig
 
-print("maniskill registering env PushCube")
 
 @register_env("PushCube-v1", max_episode_steps=50)
 class PushCubeEnv(BaseEnv):
@@ -101,8 +100,8 @@ class PushCubeEnv(BaseEnv):
 
     def _load_agent(self, options: dict):
         # set a reasonable initial pose for the agent that doesn't intersect other objects
-        if self.robot_uids == "piper":
-            super()._load_agent(options, sapien.Pose(p=[-0.4, 0, 0]))
+        if self.robot_uids == "piper":  #设置piper机械臂坐标离桌面中心更近，便于执行抓取任务
+            super()._load_agent(options, initial_agent_poses = sapien.Pose(p=[-0.3, 0, 0]))
         else:
             super()._load_agent(options, sapien.Pose(p=[-0.615, 0, 0]))
 
